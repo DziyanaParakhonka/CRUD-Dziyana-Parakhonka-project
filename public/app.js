@@ -44,6 +44,8 @@ async function loadRows() {
       <td><span class="badge">${escapeHtml(r.size)}</span></td>
       <td><span class="pill"><span class="swatch" style="background:${escapeCssColor(r.color)}"></span>${escapeHtml(r.color ?? "")}</span></td>
       <td class="qty ${qtyClass(r.quantity)}">${r.quantity}</td>
+      <td>${r.brand ? `<span class="badge">${escapeHtml(r.brand)}</span>` : ""}</td>
+      <td>${r.category ? `<span class="badge">${escapeHtml(r.category)}</span>` : ""}</td>
       <td class="actions">
         <button class="btn" data-action="edit" data-id="${r.id}" title="Edytuj">✏️</button>
         <button class="btn" data-action="delete" data-id="${r.id}" title="Usuń">🗑️</button>
@@ -77,6 +79,8 @@ function fillForm(item) {
     $("#size").value = item.size ?? "M";
     $("#color").value = item.color ?? "";
     $("#quantity").value = item.quantity ?? 0;
+    $("#brand").value = item.brand ?? "";
+    $("#category").value = item.category ?? "";
 
     editId = item.id;
     submitBtn.textContent = "Zapisz zmiany";
@@ -89,6 +93,8 @@ function resetForm() {
     form.reset();
     $("#size").value = "M";
     $("#quantity").value = 0;
+    $("#brand").value = "";
+    $("#category").value = "";
     editId = null;
     submitBtn.textContent = "Dodaj produkt";
     cancelBtn.style.display = "none";
@@ -108,7 +114,9 @@ form.addEventListener("submit", async (e) => {
         price: $("#price").value,
         size: $("#size").value,
         color: $("#color").value.trim() || null,
-        quantity: $("#quantity").value
+        quantity: $("#quantity").value,
+        brand: $("#brand").value.trim() || null,
+        category: $("#category").value.trim() || null
     };
 
     if (!payload.name || !payload.sku || payload.price === "" || !payload.size || payload.quantity === "") {
