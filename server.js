@@ -18,9 +18,15 @@ db.prepare(`
     price     REAL    NOT NULL CHECK (price >= 0),
     size      TEXT    NOT NULL CHECK (size IN ('XS','S','M','L','XL')),
     color     TEXT,
-    quantity  INTEGER NOT NULL CHECK (quantity >= 0)
+    quantity  INTEGER NOT NULL CHECK (quantity >= 0),
+    brand TEXT,
+    category TEXT
   )
 `).run();
+
+//  Migracja
+ensureColumn("products", "brand", "TEXT");
+ensureColumn("products", "category", "TEXT");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,7 +46,7 @@ app.get("/api/products/:id", (req, res) => {
 });
 
 app.post("/api/products", (req, res) => {
-    const { name, sku, price, size, color, quantity } = req.body;
+    const { name, sku, price, size, color, quantity, brand, category } = req.body;
     if (!name || !sku || price === undefined || !size || quantity === undefined) {
         return res.status(400).json({ error: "Wymagane: name, sku, price, size, quantity." });
     }
@@ -53,9 +59,9 @@ app.post("/api/products", (req, res) => {
 
     try {
         const info = db.prepare(`
-      INSERT INTO products (name, sku, price, size, color, quantity)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(s(name), skuUp(sku), pr, sizeUp(size), s(color), qty);
+      INSERT INTO products (name, sku, price, size, color, quantity, brand, category)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(s(name), skuUp(sku), pr, sizeUp(size), s(color), qty, s(brand), s(category));
         const created = db.prepare("SELECT * FROM products WHERE id = ?").get(info.lastInsertRowid);
         res.status(201).json(created);
     } catch (e) {
@@ -70,7 +76,7 @@ app.put("/api/products/:id", (req, res) => {
     const id = Number(req.params.id);
     if (Number.isNaN(id)) return res.status(400).json({ error: "Nieprawidłowe id." });
 
-    const { name, sku, price, size, color, quantity } = req.body;
+    const { name, sku, price, size, color, quantity, brand, category } = req.body;
     if (!name || !sku || price === undefined || !size || quantity === undefined) {
         return res.status(400).json({ error: "Wymagane: name, sku, price, size, quantity." });
     }
@@ -84,9 +90,9 @@ app.put("/api/products/:id", (req, res) => {
     try {
         const info = db.prepare(`
       UPDATE products
-         SET name = ?, sku = ?, price = ?, size = ?, color = ?, quantity = ?
+         SET name = ?, sku = ?, price = ?, size = ?, color = ?, quantity = ?, brand = ?, category = ?
        WHERE id = ?
-    `).run(s(name), skuUp(sku), pr, sizeUp(size), s(color), qty, id);
+    `).run(s(name), skuUp(sku), pr, sizeUp(size), s(color), qty, s(brand), s(category), id);
         if (info.changes === 0) return res.status(404).json({ error: "Nie znaleziono." });
         const updated = db.prepare("SELECT * FROM products WHERE id = ?").get(id);
         res.json(updated);
