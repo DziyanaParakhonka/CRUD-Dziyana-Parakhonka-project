@@ -117,6 +117,13 @@ const s = (v) => (v == null ? null : String(v).trim());
 const skuUp = (v) => String(v || "").trim().toUpperCase();
 const sizeUp = (v) => ["XS", "S", "M", "L", "XL"].includes(String(v).toUpperCase()) ? String(v).toUpperCase() : "M";
 
+function ensureColumn(table, column, typeSql) {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+    if (!cols.some((c) => c.name === column)) {
+        db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${typeSql}`).run();
+    }
+}
+
 //  static files 
 app.use(express.static(path.join(__dirname, "public")));
 
