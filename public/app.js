@@ -1,4 +1,8 @@
-﻿const $ = (s) => document.querySelector(s);
+﻿fetch("/api/auth/me").then(r=>r.json()).then(d=>{
+  if (!d.user) location.href="/login.html";
+});
+
+const $ = (s) => document.querySelector(s);
 const rowsTbody = $("#rows");
 const form = $("#product-form");
 const submitBtn = $("#submitBtn");
